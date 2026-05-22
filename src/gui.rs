@@ -13,7 +13,7 @@ use crate::{
 pub async fn run(config: Arc<RwLock<Config>>) {
     let png_bytes = include_bytes!("../assets/icon.png");
     let viewport = ViewportBuilder::default()
-        .with_inner_size([320.0, 360.0])
+        .with_inner_size([320.0, 385.0])
         .with_resizable(false)
         .with_icon(Arc::new(
             from_png_bytes(png_bytes).expect("Failed to load icon"),
@@ -60,6 +60,16 @@ impl eframe::App for MyApp {
                 });
                 ui.text_edit_singleline(&mut self.changes.api_token)
                     .labelled_by(api_token_label_id);
+            });
+
+            ui.horizontal(|ui: &mut egui::Ui| {
+                let mut api_server_label_id = Id::NULL;
+                ui.horizontal(|ui| {
+                    ui.set_width(70.0);
+                    api_server_label_id = ui.label("API Server: ").id;
+                });
+                ui.text_edit_singleline(&mut self.changes.api_server)
+                    .labelled_by(api_server_label_id);
             });
 
             ui.vertical_centered_justified(|ui| {

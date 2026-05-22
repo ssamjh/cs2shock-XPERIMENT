@@ -9,6 +9,10 @@ pub enum ShockMode {
     LastHitPercentage,
 }
 
+fn default_api_server() -> String {
+    "https://api.openshock.app".to_string()
+}
+
 #[derive(Deserialize, Serialize, Debug, Clone, Eq, PartialEq)]
 pub struct Config {
     pub shock_mode: ShockMode,
@@ -20,6 +24,8 @@ pub struct Config {
     pub beep_on_round_start: bool,
     pub shocker_id: String,
     pub api_token: String,
+    #[serde(default = "default_api_server")]
+    pub api_server: String,
 }
 
 impl Default for Config {
@@ -34,6 +40,7 @@ impl Default for Config {
             beep_on_round_start: false,
             shocker_id: String::new(),
             api_token: String::new(),
+            api_server: default_api_server(),
         }
     }
 }

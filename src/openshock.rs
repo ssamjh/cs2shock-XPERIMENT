@@ -109,7 +109,7 @@ pub async fn post(config: Arc<RwLock<Config>>, op: OpenShockOp) -> Result<i32, S
         }],
     };
 
-    let url = "https://api.openshock.app/2/shockers/control";
+    let url = format!("{}/2/shockers/control", config.api_server.trim_end_matches('/'));
 
     let res = reqwest::Client::new()
         .post(url)
