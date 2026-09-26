@@ -6,6 +6,6 @@
   "max_intensity": 83,
   "beep_on_match_start": false,
   "beep_on_round_start": true,
-  "shocker_id": "your-shocker-id-here",
+  "shocker_ids": [],
   "api_token": "your-api-token-here"
 }

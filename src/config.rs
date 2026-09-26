@@ -13,6 +13,24 @@ fn default_api_server() -> String {
     "https://api.openshock.app".to_string()
 }
 
+fn deserialize_shocker_ids<'de, D>(deserializer: D) -> Result<Vec<String>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum ShockerIds {
+        Many(Vec<String>),
+        One(String),
+    }
+
+    Ok(match Option::<ShockerIds>::deserialize(deserializer)? {
+        Some(ShockerIds::Many(ids)) => ids,
+        Some(ShockerIds::One(id)) => vec![id],
+        None => Vec::new(),
+    })
+}
+
 #[derive(Deserialize, Serialize, Debug, Clone, Eq, PartialEq)]
 pub struct Config {
     pub shock_mode: ShockMode,
@@ -22,7 +40,12 @@ pub struct Config {
     pub max_intensity: i32,
     pub beep_on_match_start: bool,
     pub beep_on_round_start: bool,
-    pub shocker_id: String,
+    #[serde(
+        default,
+        deserialize_with = "deserialize_shocker_ids",
+        alias = "shocker_id"
+    )]
+    pub shocker_ids: Vec<String>,
     pub api_token: String,
     #[serde(default = "default_api_server")]
     pub api_server: String,
@@ -38,12 +61,13 @@ impl Default for Config {
             max_intensity: 1,
             beep_on_match_start: false,
             beep_on_round_start: false,
-            shocker_id: String::new(),
+            shocker_ids: Vec::new(),
             api_token: String::new(),
             api_server: default_api_server(),
         }
     }
 }
+
 impl Config {
     pub fn validate(&self) -> bool {
         if self.min_duration < 1 || self.min_duration > 15 {
@@ -91,5 +115,36 @@ impl Config {
 
         file.write_all(json.as_bytes())
             .expect("Failed to write config file");
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Config;
+
+    #[test]
+    fn migrates_legacy_single_shocker_id() {
+        let config: Config = serde_json::from_str(
+            r#"{
+                "shock_mode":"Random","min_duration":1,"max_duration":1,
+                "min_intensity":1,"max_intensity":1,"beep_on_match_start":false,
+                "beep_on_round_start":false,"shocker_id":"legacy-id","api_token":"token"
+            }"#,
+        )
+        .unwrap();
+        assert_eq!(config.shocker_ids, ["legacy-id"]);
+    }
+
+    #[test]
+    fn reads_multiple_shocker_ids() {
+        let config: Config = serde_json::from_str(
+            r#"{
+                "shock_mode":"Random","min_duration":1,"max_duration":1,
+                "min_intensity":1,"max_intensity":1,"beep_on_match_start":false,
+                "beep_on_round_start":false,"shocker_ids":["one","two"],"api_token":"token"
+            }"#,
+        )
+        .unwrap();
+        assert_eq!(config.shocker_ids, ["one", "two"]);
     }
 }

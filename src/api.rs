@@ -11,9 +11,6 @@ use crate::{
 };
 
 pub async fn run(config: Arc<RwLock<Config>>) {
-    info!("Sending test beep");
-    openshock::beep(config.clone(), 1).await;
-
     let state = AppState {
         game_state: Arc::from(Mutex::from(GameState::default())),
         config: config.clone(),

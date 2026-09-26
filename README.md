@@ -60,10 +60,7 @@ There are also two options to beep whenever a match starts, and whenever a round
 
 ## Download
 
-Pre-built binaries are available for Windows in the [Releases](https://github.com/VolcanoCookies/cs2shock/releases) page.
-
-Download:
-- **Windows x64**: `cs2shock-windows-x64.zip`
+GitHub Actions builds a Windows x64 ZIP on pushes and pull requests to `main` or `dev`. You can also start a build from the **Actions** tab by choosing **CI** and **Run workflow**. Open a successful run and download the `cs2shock-windows-x64` artifact near the bottom of its summary page.
 
 *Linux and macOS support has been abandoned because let's be real, you're playing CS2 on Windows anyway.*
 
@@ -79,25 +76,28 @@ Once you save your settings once, a `config.json` file will be placed next to `c
 
 The application requires OpenShock API credentials:
 
-- **Shocker ID**: Your OpenShock shocker UUID (found in your OpenShock dashboard)
-- **API Key**: Your OpenShock API token (create one in your account settings)
+- **API token**: Create one in your OpenShock account settings.
+- **Shockers**: Enter your token, click **Discover shockers**, and select the shockers you want to control. You can also enter shocker UUIDs manually when discovery is unavailable.
+
+**Test beep** uses the current settings in the form, including unsaved edits. Save your settings to use them for game events. The app sends game events to every selected shocker. The log view is available from the app; the Windows release build starts without a separate console window.
 
 You can obtain these from your OpenShock account at [OpenShock](https://openshock.app/).
 
-**Important**: Duration values are in **milliseconds** (300-30000ms), not seconds.
+Duration values in the app and config file are in **seconds** (1–15). OpenShock receives milliseconds after conversion.
 
 Example `config.json`:
 ```json
 {
   "shock_mode": "LastHitPercentage",
-  "min_duration": 500,
-  "max_duration": 3000,
+  "min_duration": 1,
+  "max_duration": 3,
   "min_intensity": 15,
   "max_intensity": 83,
   "beep_on_match_start": false,
   "beep_on_round_start": true,
-  "apikey": "your-openshock-api-token-here",
-  "shocker_id": "your-shocker-uuid-here"
+  "api_token": "your-openshock-api-token-here",
+  "shocker_ids": ["first-shocker-uuid", "second-shocker-uuid"],
+  "api_server": "https://api.openshock.app"
 }
 ```
 
@@ -107,11 +107,8 @@ Example `config.json`:
 
 -   [Rust installed](https://doc.rust-lang.org/cargo/getting-started/installation.html)
 
-1. Clone the repository
-    - `git clone https://github.com/VolcanoCookies/cs2shock.git`
-2. Open the created folder
-    - `cd cs2shock`
-3. Build the project
-    - `cargo build --release`
+1. Clone the repository and open its folder.
+2. Double-click `build.bat`, or run it from Command Prompt.
+3. Find the packaged app in `dist/cs2shock-windows-x64.zip`.
 
-You can then find the executable in `cs2shock/target/release/cs2shock.exe`
+The script requires Rust and Cargo. It builds a Windows release executable and packages the app files. You can also run `cargo build --release` directly; its executable is at `target/release/cs2shock.exe`.

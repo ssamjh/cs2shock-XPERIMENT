@@ -1,4 +1,7 @@
+#![cfg_attr(all(windows, not(debug_assertions)), windows_subsystem = "windows")]
+
 mod api;
+pub mod app_log;
 mod config;
 mod gamestateintegration;
 mod gui;
@@ -13,8 +16,6 @@ use std::{
 use config::Config;
 use gamestateintegration::{MapPhase, RoundPhase};
 use log::{error, info};
-use simple_logger::SimpleLogger;
-use time::macros::format_description;
 use tokio::sync::{Mutex, RwLock};
 
 pub const NAME: &str = "CS2 Shocker";
@@ -62,14 +63,7 @@ impl GameState {
 
 #[tokio::main]
 async fn main() {
-    SimpleLogger::new()
-        .env()
-        .with_level(log::LevelFilter::Info)
-        .with_timestamp_format(format_description!(
-            "[[[year]-[month]-[day] [hour]:[minute]:[second]]"
-        ))
-        .init()
-        .expect("Failed to initialize logger");
+    app_log::init();
 
     let config = || -> Result<Config, Error> {
         let mut file = File::open("config.json")?;
@@ -90,8 +84,6 @@ async fn main() {
         config = Arc::new(RwLock::new(Config::default()));
         error!("Invalid config, using default");
     }
-
-    info!("Config: \n{:?}", config);
 
     info!("{} v{}", NAME, env!("CARGO_PKG_VERSION"));
 
