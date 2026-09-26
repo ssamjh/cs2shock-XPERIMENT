@@ -1,126 +1,35 @@
-# Release and Deployment Guide
+# Build and release
 
-## Automated Builds
+## Build with GitHub Actions
 
-This project uses GitHub Actions for automated building and releasing. There are two main workflows:
+The [CI workflow](https://github.com/ssamjh/cs2shock-XPERIMENT/actions/workflows/ci.yml) runs on pushes and pull requests targeting `main` or `dev`. It checks formatting, clippy, tests, then builds and packages the Windows x64 app.
 
-### CI Workflow (`.github/workflows/ci.yml`)
+To start a build manually, open the [Actions tab](https://github.com/ssamjh/cs2shock-XPERIMENT/actions), select **CI**, and choose **Run workflow**. Download `cs2shock-windows-x64.zip` from the successful run's artifacts. Artifacts are kept for 30 days.
 
-Runs on every push to `main` or `dev` branches, and on pull requests.
+If no runs appear after a push, check that Actions are enabled for this fork in **Settings > Actions > General**.
 
-**What it does:**
-- Runs `cargo fmt` to check code formatting
-- Runs `cargo clippy` to check for common mistakes
-- Builds the project on Windows
-- Runs all tests
-- Creates release builds to verify they compile
+## Create a GitHub release manually
 
-**Triggered by:**
-- Push to `main` or `dev` branches
-- Pull requests to `main` or `dev` branches
+There is no automated release workflow. To publish a build:
 
-### Release Workflow (`.github/workflows/release.yml`)
+1. Open a successful run in the [Actions tab](https://github.com/ssamjh/cs2shock-XPERIMENT/actions) and download the `cs2shock-windows-x64` artifact.
+2. Open the [Releases page](https://github.com/ssamjh/cs2shock-XPERIMENT/releases) and create a release.
+3. Attach `cs2shock-windows-x64.zip`, add release notes, and publish.
 
-Creates official releases with binaries for all supported platforms.
+The archive contains the Windows executable, README, example configuration, and CS2 Game State Integration config. The ZIP uses a placeholder API token; users must add their own token before running the app.
 
-**What it does:**
-- Builds release binary for Windows x64
-- Creates a GitHub release
-- Uploads the binary to the release
-- Includes `README.md`, `config.json`, and `gamestate_integration_cs2shock.cfg` in the archive
+## Local build
 
-**Triggered by:**
-- Pushing a tag starting with `v` (e.g., `v1.1.0`)
-- Manual workflow dispatch from GitHub Actions UI
+On Windows with Rust installed, run:
 
-## Creating a Release
-
-### 1. Update Version Number
-
-Update the version in `Cargo.toml`:
-
-```toml
-[package]
-name = "cs2shock"
-version = "1.2.0"  # <- Update this
-edition = "2021"
+```bat
+build.bat --no-pause
 ```
 
-### 2. Commit Changes
+This creates `dist\cs2shock-windows-x64.zip`. To run the CI checks locally:
 
 ```bash
-git add Cargo.toml
-git commit -m "Bump version to 1.2.0"
-git push origin main
-```
-
-### 3. Create and Push Tag
-
-```bash
-# Create the tag
-git tag v1.2.0
-
-# Push the tag to GitHub
-git push origin v1.2.0
-```
-
-### 4. Watch the Build
-
-1. Go to the [Actions tab](https://github.com/VolcanoCookies/cs2shock/actions) on GitHub
-2. You'll see the "Release" workflow running
-3. Wait for all builds to complete (usually 5-10 minutes)
-4. Once done, check the [Releases page](https://github.com/VolcanoCookies/cs2shock/releases)
-
-## Manual Release (Workflow Dispatch)
-
-You can also trigger a release manually without creating a tag:
-
-1. Go to the [Actions tab](https://github.com/VolcanoCookies/cs2shock/actions)
-2. Click on "Release" workflow
-3. Click "Run workflow"
-4. Select the branch
-5. Click "Run workflow" button
-
-This will create a development release with a timestamp.
-
-## Local Testing
-
-Before creating a release, test the build locally:
-
-```bash
-# Check formatting
 cargo fmt --all -- --check
-
-# Run clippy
 cargo clippy --all-targets --all-features -- -D warnings
-
-# Run tests
 cargo test
-
-# Build release
-cargo build --release
 ```
-
-## Platform-Specific Notes
-
-### Windows
-- Builds using MSVC toolchain
-- Creates a `.zip` archive
-- This is the only supported platform because CS2 is a Windows game
-
-## Troubleshooting
-
-### Build fails
-- Check the Actions log for specific errors
-- Ensure all dependencies are properly listed in `Cargo.toml`
-- Test locally on Windows
-
-### Release not created
-- Make sure the tag starts with `v`
-- Check GitHub Actions permissions in repository settings
-- Verify GITHUB_TOKEN has write access
-
-### Binary doesn't work
-- Test the release build locally first: `cargo build --release`
-- Check that all runtime dependencies are documented
-- Verify you're on Windows x64

@@ -5,8 +5,7 @@
 # THEIR CODE IS NOT AS SHIT AS THE CODE IN THIS REPO (I THINK)
 # THIS CODE IS A JERRYRIGED VERSION AND IS EXPERIMENTAL AND COMES WITH **NO SUPPORT**
 
-[![CI](https://github.com/NanashiTheNameless/cs2shock-XPERIMENT/actions/workflows/ci.yml/badge.svg)](https://github.com/NanashiTheNameless/cs2shock-XPERIMENT/actions/workflows/ci.yml)
-[![Release](https://github.com/NanashiTheNameless/cs2shock-XPERIMENT/actions/workflows/release.yml/badge.svg)](https://github.com/NanashiTheNameless/cs2shock-XPERIMENT/actions/workflows/release.yml)
+[![CI](https://github.com/ssamjh/cs2shock-XPERIMENT/actions/workflows/ci.yml/badge.svg)](https://github.com/ssamjh/cs2shock-XPERIMENT/actions/workflows/ci.yml)
 
 ---
 
@@ -61,6 +60,8 @@ There are also two options to beep whenever a match starts, and whenever a round
 ## Download
 
 GitHub Actions builds a Windows x64 ZIP on pushes and pull requests to `main` or `dev`. You can also start a build from the **Actions** tab by choosing **CI** and **Run workflow**. Open a successful run and download the `cs2shock-windows-x64` artifact near the bottom of its summary page.
+
+If no workflow runs appear after a push, check that Actions are enabled for this fork in **Settings > Actions > General**.
 
 *Linux and macOS support has been abandoned because let's be real, you're playing CS2 on Windows anyway.*
 

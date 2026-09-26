@@ -67,7 +67,7 @@ impl MyApp {
         }
     }
 
-    fn start_discovery(&mut self) {
+    fn start_discovery(&mut self, ctx: &egui::Context) {
         if self.changes.api_token.trim().is_empty() {
             self.discovery_error = Some("Enter an API token before discovering shockers.".into());
             return;
@@ -76,6 +76,7 @@ impl MyApp {
         let (tx, rx) = mpsc::channel();
         let server = self.changes.api_server.clone();
         let token = self.changes.api_token.clone();
+        let ctx = ctx.clone();
         self.discovery_request = Some((server.clone(), token.clone()));
         self.discovery_rx = Some(rx);
         self.discovery_loading = true;
@@ -84,10 +85,11 @@ impl MyApp {
         tokio::spawn(async move {
             let result = openshock::discover_shockers(&server, &token).await;
             let _ = tx.send(result);
+            ctx.request_repaint();
         });
     }
 
-    fn poll_discovery(&mut self, ctx: &egui::Context) {
+    fn poll_discovery(&mut self) {
         let received = self.discovery_rx.as_ref().map(|rx| rx.try_recv());
         match received {
             Some(Ok(result)) => {
@@ -122,9 +124,6 @@ impl MyApp {
                 self.discovery_error =
                     Some("Shockers could not be discovered. Please try again.".into());
             }
-            Some(Err(mpsc::TryRecvError::Empty)) | None if self.discovery_loading => {
-                ctx.request_repaint_after(std::time::Duration::from_millis(100));
-            }
             _ => {}
         }
     }
@@ -153,7 +152,7 @@ impl MyApp {
 
 impl eframe::App for MyApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        self.poll_discovery(ctx);
+        self.poll_discovery();
 
         egui::TopBottomPanel::top("toolbar").show(ctx, |ui| {
             ui.horizontal(|ui| {
@@ -196,10 +195,9 @@ impl eframe::App for MyApp {
                         .add_enabled(!self.discovery_loading, Button::new("Discover shockers"))
                         .clicked()
                     {
-                        self.start_discovery();
+                        self.start_discovery(ctx);
                     }
                     if self.discovery_loading {
-                        ui.spinner();
                         ui.label("Searching...");
                     }
                 });
@@ -358,7 +356,6 @@ impl eframe::App for MyApp {
         });
 
         if self.logs_open {
-            ctx.request_repaint_after(std::time::Duration::from_millis(250));
             egui::Window::new("Application logs")
                 .open(&mut self.logs_open)
                 .default_size([600.0, 320.0])
@@ -377,6 +374,8 @@ impl eframe::App for MyApp {
                         });
                 });
         }
+
+        crate::app_log::set_repaint_context(self.logs_open.then(|| ctx.clone()));
 
         if ctx.input(|i| i.viewport().close_requested()) {
             info!(target: "GUI", "Closing");

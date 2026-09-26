@@ -9,6 +9,7 @@ const MAX_ENTRIES: usize = 1_000;
 
 static ENTRIES: OnceLock<Mutex<VecDeque<String>>> = OnceLock::new();
 static LOGGER: AppLogger = AppLogger;
+static REPAINT_CONTEXT: Mutex<Option<egui::Context>> = Mutex::new(None);
 
 fn entries() -> &'static Mutex<VecDeque<String>> {
     ENTRIES.get_or_init(|| Mutex::new(VecDeque::with_capacity(MAX_ENTRIES)))
@@ -26,6 +27,13 @@ pub fn recent_logs() -> Vec<String> {
 pub fn clear_logs() {
     if let Ok(mut logs) = entries().lock() {
         logs.clear();
+    }
+}
+
+/// Request a GUI repaint when a new log entry arrives, if the log viewer is open.
+pub fn set_repaint_context(context: Option<egui::Context>) {
+    if let Ok(mut current) = REPAINT_CONTEXT.lock() {
+        *current = context;
     }
 }
 
@@ -65,6 +73,12 @@ impl log::Log for AppLogger {
                 logs.pop_front();
             }
             logs.push_back(line.clone());
+        }
+
+        if let Ok(context) = REPAINT_CONTEXT.lock() {
+            if let Some(context) = context.as_ref() {
+                context.request_repaint();
+            }
         }
 
         #[cfg(debug_assertions)]
